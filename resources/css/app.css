@@ -1,0 +1,15 @@
+/* ─────────────────────────────────────────────────────────
+ * Tailwind CSS v4 — gunakan @import, bukan @tailwind
+ * ───────────────────────────────────────────────────────── */
+@import "tailwindcss";
+
+/* ─── Custom theme overrides (Tailwind v4 pakai @theme) ───
+ * Uncomment & edit sesuai kebutuhan proyek
+ * ───────────────────────────────────────────────────────── */
+/*
+@theme {
+  --color-primary: #6366f1;
+  --color-primary-dark: #4f46e5;
+  --font-sans: 'Inter', sans-serif;
+}
+*/

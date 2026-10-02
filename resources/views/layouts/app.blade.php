@@ -3,84 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Dashboard') — AI Responder</title>
+    <title>@yield('title', 'Smart Receipt Scanner') — UMKM Dashboard</title>
+    <meta name="description" content="Smart Receipt Scanner & Auto-Entry untuk dashboard admin UMKM. Scan struk, input resi, auto-timer, anti double-input, dan restock alert.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-{{-- Layout utama aplikasi dengan sidebar --}}
-<body class="h-full bg-gray-950 text-white flex">
+<body class="h-full bg-[#070b14] text-slate-100 flex overflow-hidden selection:bg-indigo-500 selection:text-white">
+
+    {{-- Background subtle decorative ambient glow --}}
+    <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <div class="absolute -top-40 left-1/4 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl"></div>
+        <div class="absolute top-1/2 -right-40 w-96 h-96 bg-violet-600/10 rounded-full blur-3xl"></div>
+    </div>
 
     {{-- ── Sidebar Kiri ─────────────────────────────────────────── --}}
-    <aside class="w-64 bg-gray-900 border-r border-gray-800 flex flex-col">
+    <aside class="w-68 bg-[#0b101d]/90 backdrop-blur-xl border-r border-slate-800/80 flex flex-col z-20 relative flex-shrink-0">
 
-        {{-- Logo --}}
-        <div class="p-5 border-b border-gray-800">
-            <a href="{{ route('dashboard') }}" class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center flex-shrink-0">
-                    <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"/>
-                        <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z"/>
+        {{-- Logo Brand --}}
+        <div class="p-5 border-b border-slate-800/80">
+            <a href="{{ route('receipt-scanner.index') }}" class="flex items-center gap-3 group">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-violet-600 via-indigo-500 to-cyan-500 flex items-center justify-center flex-shrink-0 shadow-lg shadow-violet-600/25 group-hover:scale-105 transition duration-200">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
                     </svg>
                 </div>
-                <span class="font-bold text-lg">AI Responder</span>
+                <div class="min-w-0">
+                    <div class="flex items-center gap-2">
+                        <span class="font-heading font-extrabold text-base tracking-tight text-white">Receipt Scanner</span>
+                        <span class="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-gradient-to-r from-violet-500/20 to-cyan-500/20 text-violet-400 border border-violet-500/30">SMART</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 font-medium truncate">UMKM Dashboard</p>
+                </div>
             </a>
         </div>
 
+        {{-- Status System --}}
+        <div class="px-4 pt-4">
+            <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <span class="relative flex h-2.5 w-2.5">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                    </span>
+                    <div>
+                        <p class="text-[11px] font-semibold text-slate-200">Queue Worker Aktif</p>
+                        <p class="text-[10px] text-slate-400">Auto-Timer 5 Menit</p>
+                    </div>
+                </div>
+                <span class="text-[10px] font-mono font-medium px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">LIVE</span>
+            </div>
+        </div>
+
         {{-- Navigasi Utama --}}
-        <nav class="flex-1 p-4 space-y-1">
+        <nav class="flex-1 p-4 space-y-1.5 overflow-y-auto">
+            <p class="text-[10px] uppercase tracking-wider font-bold text-slate-300 px-3 pt-2 pb-1">Menu Utama</p>
+
             @php
-                // Helper: tambahkan kelas aktif jika URL sesuai
-                $navClass = fn($route) => request()->routeIs($route)
-                    ? 'flex items-center gap-3 px-3 py-2 rounded-lg bg-indigo-600 text-white font-medium'
-                    : 'flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition';
+                $navItem = function($route, $iconSvg, $label, $badge = null) {
+                    $active = request()->routeIs($route . '*');
+                    $baseClass = "flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition duration-150 group ";
+                    if ($active) {
+                        $classes = $baseClass . "bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-md shadow-indigo-600/20";
+                    } else {
+                        $classes = $baseClass . "text-slate-400 hover:text-slate-100 hover:bg-slate-800/60";
+                    }
+
+                    $badgeHtml = $badge ? "<span class='text-xs px-2 py-0.5 rounded-full font-bold " . ($active ? "bg-white/20 text-white" : "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20") . "'>{$badge}</span>" : "";
+
+                    return "<a href='" . route($route) . "' class='{$classes}'>
+                                <div class='flex items-center gap-3'>
+                                    {$iconSvg}
+                                    <span>{$label}</span>
+                                </div>
+                                {$badgeHtml}
+                            </a>";
+                };
             @endphp
 
-            <a href="{{ route('dashboard') }}" class="{{ $navClass('dashboard') }}">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M3 12h18M3 17h18"/>
-                </svg>
-                Dashboard
-            </a>
+            {!! $navItem('receipt-scanner.index', '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>', 'Dashboard Scanner') !!}
 
-            <a href="{{ route('stores.index') }}" class="{{ $navClass('stores.*') }}">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                </svg>
-                Toko Saya
-            </a>
+            {!! $navItem('receipt-scanner.inventory.index', '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>', 'Inventaris Stok') !!}
 
-            <a href="{{ route('knowledge-base.index') }}" class="{{ $navClass('knowledge-base.*') }}">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                </svg>
-                Knowledge Base
-            </a>
+            <p class="text-[10px] uppercase tracking-wider font-bold text-slate-300 px-3 pt-4 pb-1">Input Cepat</p>
 
-            <a href="{{ route('inbox.index') }}" class="{{ $navClass('inbox.*') }}">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
-                </svg>
-                Inbox
-            </a>
+            {!! $navItem('receipt-scanner.form-resi', '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/></svg>', 'Input via Resi') !!}
         </nav>
 
-        {{-- Info Seller di Bawah Sidebar --}}
-        <div class="p-4 border-t border-gray-800">
-            <div class="flex items-center gap-3 mb-3">
-                <div class="w-9 h-9 rounded-full bg-indigo-700 flex items-center justify-center text-sm font-bold flex-shrink-0">
+        {{-- Info User di Bawah Sidebar --}}
+        <div class="p-4 border-t border-slate-800/80 bg-slate-900/40">
+            <div class="flex items-center gap-3 mb-3 p-2 rounded-xl bg-slate-800/50 border border-slate-700/50">
+                <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-violet-500 to-cyan-600 flex items-center justify-center text-sm font-bold text-white shadow-sm flex-shrink-0">
                     {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                 </div>
-                <div class="min-w-0">
-                    <p class="text-sm font-medium truncate">{{ auth()->user()->name }}</p>
-                    <p class="text-xs text-gray-500 truncate">{{ auth()->user()->store_name ?? 'Lengkapi profil' }}</p>
+                <div class="min-w-0 flex-1">
+                    <p class="text-xs font-semibold text-white truncate">{{ auth()->user()->name }}</p>
+                    <p class="text-[11px] text-slate-400 truncate">{{ auth()->user()->store_name ?? 'Admin UMKM' }}</p>
                 </div>
             </div>
+
             {{-- Tombol Logout --}}
             <form action="{{ route('logout') }}" method="POST">
                 @csrf
                 <button type="submit"
-                        class="w-full text-left text-xs text-gray-500 hover:text-red-400 transition px-1 py-1">
-                    Keluar dari akun
+                        class="w-full flex items-center justify-center gap-2 text-xs text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition px-3 py-2 rounded-lg font-medium border border-transparent hover:border-red-500/20">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                    </svg>
+                    Keluar Akun
                 </button>
             </form>
         </div>
@@ -88,38 +120,61 @@
     </aside>
 
     {{-- ── Konten Utama ──────────────────────────────────────────── --}}
-    <main class="flex-1 overflow-auto">
+    <main class="flex-1 overflow-auto flex flex-col z-10 relative">
 
-        {{-- Header halaman --}}
-        <div class="border-b border-gray-800 px-8 py-5 flex items-center justify-between">
+        {{-- Top App Bar --}}
+        <header class="h-18 border-b border-slate-800/80 bg-[#090e1a]/80 backdrop-blur-md px-8 flex items-center justify-between sticky top-0 z-30 flex-shrink-0">
             <div>
-                <h1 class="text-xl font-semibold">@yield('page-title', 'Dashboard')</h1>
-                <p class="text-sm text-gray-400 mt-0.5">@yield('page-subtitle')</p>
+                <div class="flex items-center gap-2">
+                    <h1 class="font-heading text-lg font-bold text-white tracking-tight">@yield('page-title', 'Receipt Scanner')</h1>
+                    <span class="text-xs text-slate-500">•</span>
+                    <span class="text-xs font-medium text-slate-400">@yield('page-subtitle')</span>
+                </div>
             </div>
-            @yield('header-action')
-        </div>
+            <div class="flex items-center gap-3">
+                @yield('header-action')
+            </div>
+        </header>
 
-        {{-- Flash message (sukses / error) --}}
-        <div class="px-8 pt-5">
+        {{-- Flash Messages --}}
+        <div class="px-8 pt-4">
             @if (session('success'))
-                <div class="mb-4 p-4 rounded-xl bg-green-500/10 border border-green-500/30 text-green-400 text-sm">
-                    {{ session('success') }}
+                <div class="mb-4 p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2.5 shadow-lg shadow-emerald-500/5"
+                     x-data="{ show: true }" x-show="show" x-transition x-init="setTimeout(() => show = false, 6000)">
+                    <svg class="w-4 h-4 text-emerald-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                    <span>{{ session('success') }}</span>
+                    <button @click="show = false" class="ml-auto text-emerald-400/60 hover:text-emerald-300 transition">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
                 </div>
             @endif
 
             @if (isset($errors) && $errors->any())
-                <div class="mb-4 p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
-                    <ul class="list-disc list-inside space-y-1">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
+                <div class="mb-4 p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs shadow-lg shadow-rose-500/5"
+                     x-data="{ show: true }" x-show="show" x-transition>
+                    <div class="flex items-start gap-2.5">
+                        <svg class="w-4 h-4 text-rose-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                        </svg>
+                        <div class="flex-1">
+                            <ul class="list-disc list-inside space-y-1">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                        <button @click="show = false" class="text-rose-400/60 hover:text-rose-300 transition flex-shrink-0">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    </div>
                 </div>
             @endif
         </div>
 
-        {{-- Isi halaman yang spesifik --}}
-        <div class="px-8 pb-8">
+        {{-- Content View Body --}}
+        <div class="px-8 pb-10 flex-1">
             @yield('content')
         </div>
 

@@ -1,16 +1,10 @@
 <?php
 
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\ConnectedStoreController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\InboxController;
-use App\Http\Controllers\KnowledgeBaseController;
-use App\Http\Controllers\WebhookController;
-use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
+use App\Http\Controllers\ReceiptScannerController;
 use Illuminate\Support\Facades\Route;
 
 // ─── Public Routes (Guest Only) ────────────────────────────────────
-// Middleware 'guest' = redirect ke dashboard jika sudah login
 Route::middleware('guest')->group(function () {
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class, 'register']);
@@ -19,53 +13,40 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
 });
 
-// ─── Protected Routes (Seller Must Be Logged In) ───────────────────
-// Middleware 'auth' = redirect ke /login jika belum login
+// ─── Protected Routes (Admin Must Be Logged In) ────────────────────
 Route::middleware('auth')->group(function () {
 
-    // Redirect root ke dashboard
-    Route::get('/', fn() => redirect()->route('dashboard'));
+    // Root → redirect ke Receipt Scanner dashboard
+    Route::get('/', fn() => redirect()->route('receipt-scanner.index'));
 
-    // Dashboard utama
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    // ─── Smart Receipt Scanner & Auto-Entry ────────────────────────
+    Route::prefix('receipt-scanner')->name('receipt-scanner.')->group(function () {
+        // Dashboard & Riwayat
+        Route::get('/',                              [ReceiptScannerController::class, 'index'])->name('index');
 
-    // Manajemen toko marketplace
-    Route::prefix('stores')->name('stores.')->group(function () {
-        Route::get('/',                              [ConnectedStoreController::class, 'index'])->name('index');
-        Route::get('/create',                        [ConnectedStoreController::class, 'create'])->name('create');
-        Route::post('/',                             [ConnectedStoreController::class, 'store'])->name('store');
-        Route::delete('/{store}',                    [ConnectedStoreController::class, 'destroy'])->name('destroy');
-        Route::patch('/{store}/toggle-ai',           [ConnectedStoreController::class, 'toggleAi'])->name('toggle-ai');
-    });
+        // Fitur 1: Scan Struk (OCR)
+        Route::post('/upload-struk',                 [ReceiptScannerController::class, 'uploadStruk'])->name('upload-struk');
+        Route::post('/store-struk',                  [ReceiptScannerController::class, 'storeStruk'])->name('store-struk');
 
-    // Manajemen pengetahuan AI (Knowledge Base)
-    Route::prefix('knowledge-base')->name('knowledge-base.')->group(function () {
-        Route::get('/',                              [KnowledgeBaseController::class, 'index'])->name('index');
-        Route::get('/create',                        [KnowledgeBaseController::class, 'create'])->name('create');
-        Route::post('/',                             [KnowledgeBaseController::class, 'store'])->name('store');
-        Route::get('/{knowledgeBase}/edit',          [KnowledgeBaseController::class, 'edit'])->name('edit');
-        Route::put('/{knowledgeBase}',               [KnowledgeBaseController::class, 'update'])->name('update');
-        Route::delete('/{knowledgeBase}',            [KnowledgeBaseController::class, 'destroy'])->name('destroy');
-        Route::patch('/{knowledgeBase}/toggle',      [KnowledgeBaseController::class, 'toggleStatus'])->name('toggle');
-    });
+        // Fitur 2: Input via Resi
+        Route::get('/resi',                          [ReceiptScannerController::class, 'formResi'])->name('form-resi');
+        Route::post('/cari-resi',                    [ReceiptScannerController::class, 'cariResi'])->name('cari-resi');
+        Route::post('/store-resi',                   [ReceiptScannerController::class, 'storeResi'])->name('store-resi');
 
-    // Centralized Inbox & Human Takeover
-    Route::prefix('inbox')->name('inbox.')->group(function () {
-        Route::get('/',                              [InboxController::class, 'index'])->name('index');
-        Route::post('/{conversation}/reply',         [InboxController::class, 'reply'])->name('reply');
-        Route::patch('/{conversation}/toggle-ai',    [InboxController::class, 'toggleAi'])->name('toggle-ai');
-        Route::post('/simulate',                     [InboxController::class, 'simulateMessage'])->name('simulate');
+        // Detail & Aksi
+        Route::get('/{order}',                       [ReceiptScannerController::class, 'show'])->name('show');
+        Route::patch('/{order}/cancel',              [ReceiptScannerController::class, 'cancel'])->name('cancel');
+
+        // Inventaris / Stok
+        Route::get('/kelola/inventaris',             [ReceiptScannerController::class, 'inventoryIndex'])->name('inventory.index');
+        Route::post('/kelola/inventaris',             [ReceiptScannerController::class, 'inventoryStore'])->name('inventory.store');
+        Route::put('/kelola/inventaris/{inventory}',  [ReceiptScannerController::class, 'inventoryUpdate'])->name('inventory.update');
+        Route::delete('/kelola/inventaris/{inventory}',[ReceiptScannerController::class, 'inventoryDestroy'])->name('inventory.destroy');
+
+        // Notifikasi
+        Route::patch('/notifikasi/{notification}/read', [ReceiptScannerController::class, 'markNotificationRead'])->name('notification.read');
     });
 
     // Logout
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });
-
-// ─── Marketplace Webhook Endpoints (Bypass CSRF) ───────────────────
-Route::prefix('api')->withoutMiddleware([ValidateCsrfToken::class])->group(function () {
-    Route::post('/incoming-chat',    [WebhookController::class, 'handleIncomingChat'])->name('api.incoming-chat');
-    Route::post('/webhook/shopee',   [WebhookController::class, 'handleShopee'])->name('webhook.shopee');
-    Route::post('/webhook/tiktok',   [WebhookController::class, 'handleTikTok'])->name('webhook.tiktok');
-    Route::post('/webhook/lazada',   [WebhookController::class, 'handleLazada'])->name('webhook.lazada');
-});
-

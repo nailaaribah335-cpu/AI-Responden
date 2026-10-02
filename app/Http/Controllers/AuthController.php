@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 /**
- * Menangani Register, Login, dan Logout untuk Seller.
+ * Menangani Register, Login, dan Logout untuk Admin UMKM.
  */
 class AuthController extends Controller
 {
@@ -38,7 +38,7 @@ class AuthController extends Controller
         // Langsung login setelah register
         Auth::login($user);
 
-        return redirect()->route('dashboard')->with('success', 'Selamat datang, ' . $user->name . '!');
+        return redirect()->route('receipt-scanner.index')->with('success', 'Selamat datang, ' . $user->name . '!');
     }
 
     // ─── Login ─────────────────────────────────────────────────────
@@ -58,7 +58,7 @@ class AuthController extends Controller
         // Coba autentikasi, jika berhasil redirect ke dashboard
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate(); // Cegah session fixation attack
-            return redirect()->intended(route('dashboard'));
+            return redirect()->intended(route('receipt-scanner.index'));
         }
 
         // Jika gagal, kembalikan ke form login dengan pesan error
